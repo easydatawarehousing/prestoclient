@@ -1,33 +1,6 @@
 prestoclient
 ============
 
-PrestoClient provides a method to communicate with a Presto server. Presto is a fast query
-engine developed by Facebook that runs distributed queries against Hadoop HDFS servers.
-
-Availability
-============
-Source code is available through: https://github.com/easydatawarehousing/prestoclient
-
-Additional information may be found here: http://www.easydatawarehousing.com/tag/presto/
-
-Copyright
-=========
-Copyright 2013 Ivo Herweijer | easydatawarehousing.com
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at:
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-PrestoClient
-============
 PrestoClient implements a Python class to communicate with a Presto server.
 Presto (http://prestodb.io/) is a fast query engine developed
 by Facebook that runs distributed queries against a (cluster of)
@@ -55,7 +28,7 @@ You can use this class with this sample code:
 
 
 Presto client protocol
-======================
+----------------------
 
 The communication protocol used between Presto clients and servers is not documented. It seems to
 be as follows:
@@ -80,8 +53,31 @@ not respond to the server (by following the nextUri links) the server will cance
 after 5 minutes. These timeouts are hardcoded in the Presto server source code.
 
 ToDo
-====
+----
 - Make the PrestoClient class re-usable. Currently you can only start one query per instance of
 this class.
 
 - Add support for insert/update queries (if and when Presto server supports this).
+
+Availability
+------------
+Source code is available through: https://github.com/easydatawarehousing/prestoclient
+
+Additional information may be found here: http://www.easydatawarehousing.com/tag/presto/
+
+Copyright
+---------
+Copyright 2013 Ivo Herweijer | easydatawarehousing.com
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
