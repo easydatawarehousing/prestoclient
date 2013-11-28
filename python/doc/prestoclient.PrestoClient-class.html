@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>prestoclient.PrestoClient</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="prestoclient-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="prestoclient-module.html">Module&nbsp;prestoclient</a> ::
+        Class&nbsp;PrestoClient
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="prestoclient.PrestoClient-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class PrestoClient</h1><p class="nomargin-top"><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient">source&nbsp;code</a></span></p>
+<h1 class="heading">PrestoClient</h1>
+    <p>PrestoClient implements a Python class to communicate with a Presto 
+    server. Presto (<a href="http://prestodb.io/" 
+    target="_top">http://prestodb.io/</a>) is a fast query engine developed
+    by Facebook that runs distributed queries against a (cluster of) Hadoop
+    HDFS servers (<a href="http://hadoop.apache.org/" 
+    target="_top">http://hadoop.apache.org/</a>). Presto uses SQL as its 
+    query language. Presto is an alternative for Hadoop-Hive.</p>
+    <p>PrestoClient was developed using Presto 0.52 and tested on Presto 
+    0.52 and 0.54.</p>
+    <p>You can use this class with this sample code:</p>
+<pre class="py-doctest">
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">import</span> prestoclient
+<span class="py-prompt">&gt;&gt;&gt;</span>
+<span class="py-prompt">&gt;&gt;&gt; </span>sql = <span class="py-string">&quot;SHOW TABLES&quot;</span>
+<span class="py-prompt">&gt;&gt;&gt;</span>
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-comment"># Replace localhost with ip address or dns name of the Presto server running the discovery service</span>
+<span class="py-prompt">&gt;&gt;&gt; </span>presto = prestoclient.PrestoClient(<span class="py-string">&quot;localhost&quot;</span>)
+<span class="py-prompt">&gt;&gt;&gt;</span>
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">if</span> <span class="py-keyword">not</span> presto.startquery(sql):
+<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> presto.getlasterrormessage()
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">else</span>:
+<span class="py-prompt">&gt;&gt;&gt; </span>    presto.waituntilfinished(True) <span class="py-comment"># Remove True parameter to skip printing status messages</span>
+<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> <span class="py-string">&quot;Columns: &quot;</span>, presto.getcolumns()
+<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> <span class="py-string">&quot;Datalength: &quot;</span>, presto.getdatalength(), <span class="py-string">&quot; Data: &quot;</span>, presto.getdata()</pre>
+  <h1 class="heading">Presto client protocol</h1>
+    <p>The communication protocol used between Presto clients and servers 
+    is not documented. It seems to be as follows:</p>
+    <p>Client sends http POST request. Headerinformation should include: 
+    X-Presto-Catalog, X-Presto-Source, X-Presto-Schema, User-Agent, 
+    X-Presto-User. The body of the request should contain the sql 
+    statement. The server responds by returning JSON data. This data should
+    contain 2 uri's. One giving the link to get more information about the 
+    query execution (infoUri) and the other one giving the link to fetch 
+    the next packet of data (nextUri).</p>
+    <p>The client should send GET requests to the server (header: 
+    X-Presto-Source, User-Agent, X-Presto-User. Body: empty) following the 
+    nextUri link from the last response until the server response does not 
+    give any more nextUri links. The server response also contains a 
+    'state' variable. When there is no nextUri the state should be one of: 
+    FINISHED, FAILED or CANCELED. Each response by the server to a 
+    'nextUri' may contain information about the columns returned by the 
+    query and all- or part of the querydata.</p>
+    <p>The server reponse may contain a variable with the uri to cancel the
+    query (partialCancelUri). The client may issue a DELETE request to the 
+    server using this link. The Presto server will retain information about
+    finished queries for 15 minutes. When a client does not respond to the 
+    server (by following the nextUri links) the server will cancel these 
+    'dead' queries after 5 minutes. These timeouts are hardcoded in the 
+    Presto server source code.</p>
+  <h1 class="heading">ToDo</h1>
+    <ul>
+      <li>
+        Make the PrestoClient class re-usable. Currently you can only start
+        one query per instance of this class.
+      </li>
+      <li>
+        Add support for insert/update queries (if and when Presto server 
+        supports this).
+      </li>
+    </ul>
+  <h1 class="heading">Availability</h1>
+    <p>Source code is available through: <a 
+    href="https://github.com/easydatawarehousing/prestoclient" 
+    target="_top">https://github.com/easydatawarehousing/prestoclient</a></p>
+    <p>Additional information may be found here: <a 
+    href="http://www.easydatawarehousing.com/tag/presto/" 
+    target="_top">http://www.easydatawarehousing.com/tag/presto/</a></p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">in_server</span>,
+        <span class="summary-sig-arg">in_port</span>=<span class="summary-sig-default">8080</span>,
+        <span class="summary-sig-arg">in_catalog</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">hive</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">in_user</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span><br />
+      Constructor of PrestoClient class.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getversion"></a><span class="summary-sig-name">getversion</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return PrestoClient version number.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getversion">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getresponse"></a><span class="summary-sig-name">getresponse</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return response of last executed request to the prestoserver.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getresponse">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getlasterrormessage"></a><span class="summary-sig-name">getlasterrormessage</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return error message of last executed request to the prestoserver or 
+      empty string if there is no error.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getlasterrormessage">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#getcolumns" class="summary-sig-name">getcolumns</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the column information of the queryresults.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getcolumns">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getdatalength"></a><span class="summary-sig-name">getdatalength</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the length of the currently buffered data in number of rows.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getdatalength">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getdata"></a><span class="summary-sig-name">getdata</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the currently buffered data.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getdata">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#cleardata" class="summary-sig-name">cleardata</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Empty the data buffer.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.cleardata">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#startquery" class="summary-sig-name">startquery</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">in_sql_statement</span>,
+        <span class="summary-sig-arg">in_schema</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">default</code><code class="variable-quote">'</code></span>)</span><br />
+      Start a query.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.startquery">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#waituntilfinished" class="summary-sig-name">waituntilfinished</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">in_verbose</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns when query has finished.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.waituntilfinished">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#queryisrunning" class="summary-sig-name">queryisrunning</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns True if query is running.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.queryisrunning">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#getqueryinfo" class="summary-sig-name">getqueryinfo</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Requests query information from the Presto server and returns this as
+      a dictonary.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getqueryinfo">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#cancelquery" class="summary-sig-name">cancelquery</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Inform Prestoclient to cancel the running query.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.cancelquery">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="__openuri"></a><span class="summary-sig-name">__openuri</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">in_uri</span>)</span><br />
+      Internal function, sends a GET request to the Presto server</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__openuri">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="__getvarsfromresponse"></a><span class="summary-sig-name">__getvarsfromresponse</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Internal function, retrieves some information from the response of 
+      the Presto server.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__getvarsfromresponse">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="__getnext"></a><span class="summary-sig-name">__getnext</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Internal function, starts a new request to the Presto server using 
+      the 'nextUri' link.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__getnext">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="__cancel"></a><span class="summary-sig-name">__cancel</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Internal function, sends a cancel request to the Prestoserver.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__cancel">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__source"></a><span class="summary-name">__source</span> = <code title="'RPresto'"><code class="variable-quote">'</code><code class="variable-string">RPresto</code><code class="variable-quote">'</code></code><br />
+      Client name sent to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__version"></a><span class="summary-name">__version</span> = <code title="'0.1.0'"><code class="variable-quote">'</code><code class="variable-string">0.1.0</code><code class="variable-quote">'</code></code><br />
+      PrestoClient version string
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__useragent"></a><span class="summary-name">__useragent</span> = <code title="'RPresto/0.1.0'"><code class="variable-quote">'</code><code class="variable-string">RPresto/0.1.0</code><code class="variable-quote">'</code></code><br />
+      Useragent name sent to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__urltimeout"></a><span class="summary-name">__urltimeout</span> = <code title="5000">5000</code><br />
+      Timeout in millisec to wait for Presto server to respond
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__updatewaittimemsec"></a><span class="summary-name">__updatewaittimemsec</span> = <code title="1500">1500</code><br />
+      Wait time in millisec to wait between requests to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__server"></a><span class="summary-name">__server</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      IP address or DNS name of Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__port"></a><span class="summary-name">__port</span> = <code title="0">0</code><br />
+      TCP port of Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__catalog"></a><span class="summary-name">__catalog</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      Catalog name to be used by Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__user"></a><span class="summary-name">__user</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      Username to pass to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__lasterror"></a><span class="summary-name">__lasterror</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      Html error of last request
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__lastinfouri"></a><span class="summary-name">__lastinfouri</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      Uri to query information on the Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__lastnexturi"></a><span class="summary-name">__lastnexturi</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      Uri to next dataframe on the Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__lastcanceluri"></a><span class="summary-name">__lastcanceluri</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      Uri to cancel query on the Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__laststate"></a><span class="summary-name">__laststate</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      State returned by last request to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__cancelquery"></a><span class="summary-name">__cancelquery</span> = <code title="False">False</code><br />
+      Boolean, when set to True signals that query should be cancelled
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__isstarted"></a><span class="summary-name">__isstarted</span> = <code title="False">False</code><br />
+      Boolean, when set to True no new queries can be started
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__response"></a><span class="summary-name">__response</span> = <code title="{}"><code class="variable-group">{</code><code class="variable-group">}</code></code><br />
+      Buffer for last response of Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__columns"></a><span class="summary-name">__columns</span> = <code title="{}"><code class="variable-group">{</code><code class="variable-group">}</code></code><br />
+      Buffer for the column information returned by the query
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__data"></a><span class="summary-name">__data</span> = <code title="[]"><code class="variable-group">[</code><code class="variable-group">]</code></code><br />
+      Buffer for the data returned by the query
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">in_server</span>,
+        <span class="sig-arg">in_port</span>=<span class="sig-default">8080</span>,
+        <span class="sig-arg">in_catalog</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">hive</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">in_user</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Constructor of PrestoClient class.</p>
+  <p>Arguments:</p>
+  <p>in_server  -- IP Address or dns name of the Presto server running the 
+  discovery service</p>
+  <p>in_port    -- TCP port of the Prestoserver running the discovery 
+  service (default 8080)</p>
+  <p>in_catalog -- Catalog name that the Prestoserver should use to query 
+  hdfs (default 'hive')</p>
+  <p>in_user    -- Username to pass to the Prestoserver. If left blank the 
+  username from the OS is used (default '')</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getcolumns"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getcolumns</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getcolumns">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return the column information of the queryresults. Nested list of 
+  datatype / fieldname.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="cleardata"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">cleardata</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.cleardata">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Empty the data buffer. Use this function to implement your own 
+  'streaming' data retrieval setup.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="startquery"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">startquery</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">in_sql_statement</span>,
+        <span class="sig-arg">in_schema</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">default</code><code class="variable-quote">'</code></span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.startquery">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Start a query. Currently, only one query per instance of the 
+  PrestoClient class is allowed.</p>
+  <p>Arguments:</p>
+  <p>in_sql_statement -- The query that should be executed by the Presto 
+  server</p>
+  <p>in_schema        -- The HDFS schema that should be used (default 
+  'default')</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="waituntilfinished"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">waituntilfinished</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">in_verbose</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.waituntilfinished">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns when query has finished.</p>
+  <p>Arguments:</p>
+  <p>in_verbose -- If True print some simple progress messages (default 
+  False)</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="queryisrunning"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">queryisrunning</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.queryisrunning">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns True if query is running. Use this function to implement your 
+  own data retrieval setup.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getqueryinfo"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getqueryinfo</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getqueryinfo">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Requests query information from the Presto server and returns this as 
+  a dictonary. The Presto server removes this information 15 minutes after 
+  finishing the query.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="cancelquery"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">cancelquery</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.cancelquery">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Inform Prestoclient to cancel the running query. When queryisrunning()
+  is called prestoclient will send a cancel query request to the Presto 
+  server.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="prestoclient-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Thu Nov 28 13:59:59 2013
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
