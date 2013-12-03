@@ -1,0 +1,17 @@
+VERSION INFORMATION: PrestoClient
+=================================
+
+Version 0.2.0 BETA - Dec 03, 2013
+---------------------------------
+Python version:
+- Client properly detects when a request is finished. The instance of the client may then be re-used for a new query
+- Updated the presto client protocol. Client no longer uses the 'state' variable, only the presence of a 'nextUri' link
+  If server responds with http code 503, the request will be retried.
+- Some changes in naming of methods
+- Added the error message from the database if the query failed
+- Improved error handling
+- Updated documentation
+
+Version 0.1.0 BETA - Nov 28, 2013
+---------------------------------
+- This the first public release. Support for Python

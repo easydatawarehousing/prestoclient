@@ -65,7 +65,7 @@
     target="_top">http://hadoop.apache.org/</a>). Presto uses SQL as its 
     query language. Presto is an alternative for Hadoop-Hive.</p>
     <p>PrestoClient was developed using Presto 0.52 and tested on Presto 
-    0.52 and 0.54.</p>
+    0.52 and 0.54. Python version used is 2.7.6</p>
     <p>You can use this class with this sample code:</p>
 <pre class="py-doctest">
 <span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">import</span> prestoclient
@@ -76,41 +76,59 @@
 <span class="py-prompt">&gt;&gt;&gt; </span>presto = prestoclient.PrestoClient(<span class="py-string">&quot;localhost&quot;</span>)
 <span class="py-prompt">&gt;&gt;&gt;</span>
 <span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">if</span> <span class="py-keyword">not</span> presto.startquery(sql):
-<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> presto.getlasterrormessage()
+<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> <span class="py-string">&quot;Error: &quot;</span>, presto.getlasterrormessage()
 <span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">else</span>:
 <span class="py-prompt">&gt;&gt;&gt; </span>    presto.waituntilfinished(True) <span class="py-comment"># Remove True parameter to skip printing status messages</span>
+<span class="py-prompt">&gt;&gt;&gt;</span>
+<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-comment"># We're done now, so let's show the results</span>
 <span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> <span class="py-string">&quot;Columns: &quot;</span>, presto.getcolumns()
-<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> <span class="py-string">&quot;Datalength: &quot;</span>, presto.getdatalength(), <span class="py-string">&quot; Data: &quot;</span>, presto.getdata()</pre>
+<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">if</span> presto.getstatus() == <span class="py-string">&quot;FAILED&quot;</span>: <span class="py-keyword">print</span> <span class="py-string">&quot;Error : &quot;</span>, presto.getlasterrormessage()
+<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">if</span> presto.getdata(): <span class="py-keyword">print</span> <span class="py-string">&quot;Datalength: &quot;</span>, presto.getnumberofdatarows(), <span class="py-string">&quot; Data: &quot;</span>, presto.getdata()</pre>
   <h1 class="heading">Presto client protocol</h1>
     <p>The communication protocol used between Presto clients and servers 
-    is not documented. It seems to be as follows:</p>
-    <p>Client sends http POST request. Headerinformation should include: 
+    is not documented yet. It seems to be as follows:</p>
+    <p>Client sends http POST request to the Presto server, page: 
+    &quot;/v1/statement&quot;. Header information should include: 
     X-Presto-Catalog, X-Presto-Source, X-Presto-Schema, User-Agent, 
     X-Presto-User. The body of the request should contain the sql 
-    statement. The server responds by returning JSON data. This data should
-    contain 2 uri's. One giving the link to get more information about the 
-    query execution (infoUri) and the other one giving the link to fetch 
-    the next packet of data (nextUri).</p>
-    <p>The client should send GET requests to the server (header: 
+    statement. The server responds by returning JSON data (http status-code
+    200). This reply may contain up to 3 uri's. One giving the link to get 
+    more information about the query execution ('infoUri'), another giving 
+    the link to fetch the next packet of data ('nextUri') and one with the 
+    uri to cancel the query ('partialCancelUri').</p>
+    <p>The client should send GET requests to the server (Header: 
     X-Presto-Source, User-Agent, X-Presto-User. Body: empty) following the 
-    nextUri link from the last response until the server response does not 
-    give any more nextUri links. The server response also contains a 
-    'state' variable. When there is no nextUri the state should be one of: 
-    FINISHED, FAILED or CANCELED. Each response by the server to a 
-    'nextUri' may contain information about the columns returned by the 
-    query and all- or part of the querydata.</p>
+    'nextUri' link from the previous response until the servers response 
+    does not contain an 'nextUri' link anymore. When there is no 'nextUri' 
+    the query is finished. If the last response from the server included an
+    error section ('error') the query failed, otherwise the query 
+    succeeded. If the http status of the server response is anything other 
+    than 200 with Content-Type application/json, the query should also be 
+    considered failed. A 503 http response means that the server is (too) 
+    busy. Retry the request after waiting at least 50ms. The server 
+    response may contain a 'state' variable. This is for informational 
+    purposes only (may be subject to change in future implementations). 
+    Each response by the server to a 'nextUri' may contain information 
+    about the columns returned by the query and all- or part of the 
+    querydata. If the response contains a data section the columns section 
+    will always be available.</p>
     <p>The server reponse may contain a variable with the uri to cancel the
-    query (partialCancelUri). The client may issue a DELETE request to the 
-    server using this link. The Presto server will retain information about
-    finished queries for 15 minutes. When a client does not respond to the 
-    server (by following the nextUri links) the server will cancel these 
-    'dead' queries after 5 minutes. These timeouts are hardcoded in the 
-    Presto server source code.</p>
-  <h1 class="heading">ToDo</h1>
+    query ('partialCancelUri'). The client may issue a DELETE request to 
+    the server using this link. Response http status-code is 204.</p>
+    <p>The Presto server will retain information about finished queries for
+    15 minutes. When a client does not respond to the server (by following 
+    the 'nextUri' links) the server will cancel these 'dead' queries after 
+    5 minutes. These timeouts are hardcoded in the Presto server source 
+    code.</p>
+  <h1 class="heading">Todo</h1>
     <ul>
       <li>
-        Make the PrestoClient class re-usable. Currently you can only start
-        one query per instance of this class.
+        Enable PrestoClient to handle multiple running queries 
+        simultaneously. Currently you can only run one query per instance 
+        of this class.
+      </li>
+      <li>
+        Add support for https connections
       </li>
       <li>
         Add support for insert/update queries (if and when Presto server 
@@ -118,7 +136,7 @@
       </li>
     </ul>
   <h1 class="heading">Availability</h1>
-    <p>Source code is available through: <a 
+    <p>PrestoClient source code is available through: <a 
     href="https://github.com/easydatawarehousing/prestoclient" 
     target="_top">https://github.com/easydatawarehousing/prestoclient</a></p>
     <p>Additional information may be found here: <a 
@@ -186,10 +204,44 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="getresponse"></a><span class="summary-sig-name">getresponse</span>(<span class="summary-sig-arg">self</span>)</span><br />
+          <td><span class="summary-sig"><a name="getlastresponse"></a><span class="summary-sig-name">getlastresponse</span>(<span class="summary-sig-arg">self</span>)</span><br />
       Return response of last executed request to the prestoserver.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getresponse">source&nbsp;code</a></span>
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getlastresponse">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#getstatus" class="summary-sig-name">getstatus</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return status of the client.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getstatus">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getlastserverstate"></a><span class="summary-sig-name">getlastserverstate</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return state of the request as reported by the Presto server.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getlastserverstate">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -238,10 +290,10 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="getdatalength"></a><span class="summary-sig-name">getdatalength</span>(<span class="summary-sig-arg">self</span>)</span><br />
+          <td><span class="summary-sig"><a name="getnumberofdatarows"></a><span class="summary-sig-name">getnumberofdatarows</span>(<span class="summary-sig-arg">self</span>)</span><br />
       Return the length of the currently buffered data in number of rows.</td>
           <td align="right" valign="top">
-            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getdatalength">source&nbsp;code</a></span>
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getnumberofdatarows">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -326,7 +378,7 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#queryisrunning" class="summary-sig-name">queryisrunning</a>(<span class="summary-sig-arg">self</span>)</span><br />
+          <td><span class="summary-sig"><a name="queryisrunning"></a><span class="summary-sig-name">queryisrunning</span>(<span class="summary-sig-arg">self</span>)</span><br />
       Returns True if query is running.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.queryisrunning">source&nbsp;code</a></span>
@@ -396,29 +448,11 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a name="__getvarsfromresponse"></a><span class="summary-sig-name">__getvarsfromresponse</span>(<span class="summary-sig-arg">self</span>)</span><br />
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#__getvarsfromresponse" class="summary-sig-name" onclick="show_private();">__getvarsfromresponse</a>(<span class="summary-sig-arg">self</span>)</span><br />
       Internal function, retrieves some information from the response of 
       the Presto server.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__getvarsfromresponse">source&nbsp;code</a></span>
-            
-          </td>
-        </tr>
-      </table>
-      
-    </td>
-  </tr>
-<tr class="private">
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td><span class="summary-sig"><a name="__getnext"></a><span class="summary-sig-name">__getnext</span>(<span class="summary-sig-arg">self</span>)</span><br />
-      Internal function, starts a new request to the Presto server using 
-      the 'nextUri' link.</td>
-          <td align="right" valign="top">
-            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__getnext">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -465,7 +499,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__source"></a><span class="summary-name">__source</span> = <code title="'RPresto'"><code class="variable-quote">'</code><code class="variable-string">RPresto</code><code class="variable-quote">'</code></code><br />
+        <a name="__source"></a><span class="summary-name">__source</span> = <code title="'Python'"><code class="variable-quote">'</code><code class="variable-string">Python</code><code class="variable-quote">'</code></code><br />
       Client name sent to Presto server
     </td>
   </tr>
@@ -473,7 +507,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__version"></a><span class="summary-name">__version</span> = <code title="'0.1.0'"><code class="variable-quote">'</code><code class="variable-string">0.1.0</code><code class="variable-quote">'</code></code><br />
+        <a name="__version"></a><span class="summary-name">__version</span> = <code title="'0.2.0'"><code class="variable-quote">'</code><code class="variable-string">0.2.0</code><code class="variable-quote">'</code></code><br />
       PrestoClient version string
     </td>
   </tr>
@@ -481,7 +515,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__useragent"></a><span class="summary-name">__useragent</span> = <code title="'RPresto/0.1.0'"><code class="variable-quote">'</code><code class="variable-string">RPresto/0.1.0</code><code class="variable-quote">'</code></code><br />
+        <a name="__useragent"></a><span class="summary-name">__useragent</span> = <code title="'Python/0.2.0'"><code class="variable-quote">'</code><code class="variable-string">Python/0.2.0</code><code class="variable-quote">'</code></code><br />
       Useragent name sent to Presto server
     </td>
   </tr>
@@ -499,6 +533,22 @@
     </td><td class="summary">
         <a name="__updatewaittimemsec"></a><span class="summary-name">__updatewaittimemsec</span> = <code title="1500">1500</code><br />
       Wait time in millisec to wait between requests to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__retrywaittimemsec"></a><span class="summary-name">__retrywaittimemsec</span> = <code title="100">100</code><br />
+      Wait time in millisec to wait before retrying a request
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__maximumretries"></a><span class="summary-name">__maximumretries</span> = <code title="5">5</code><br />
+      Maximum number of retries fro request in case of 503 errors
     </td>
   </tr>
 <tr class="private">
@@ -577,6 +627,14 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a name="__clientstatus"></a><span class="summary-name">__clientstatus</span> = <code title="'NONE'"><code class="variable-quote">'</code><code class="variable-string">NONE</code><code class="variable-quote">'</code></code><br />
+      Status defined by PrestoClient: NONE, RUNNING, SUCCEEDED, FAILED
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a name="__cancelquery"></a><span class="summary-name">__cancelquery</span> = <code title="False">False</code><br />
       Boolean, when set to True signals that query should be cancelled
     </td>
@@ -585,15 +643,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__isstarted"></a><span class="summary-name">__isstarted</span> = <code title="False">False</code><br />
-      Boolean, when set to True no new queries can be started
-    </td>
-  </tr>
-<tr class="private">
-    <td width="15%" align="right" valign="top" class="summary">
-      <span class="summary-type">&nbsp;</span>
-    </td><td class="summary">
-        <a name="__response"></a><span class="summary-name">__response</span> = <code title="{}"><code class="variable-group">{</code><code class="variable-group">}</code></code><br />
+        <a name="__lastresponse"></a><span class="summary-name">__lastresponse</span> = <code title="{}"><code class="variable-group">{</code><code class="variable-group">}</code></code><br />
       Buffer for last response of Presto server
     </td>
   </tr>
@@ -665,6 +715,26 @@
   </dl>
 </td></tr></table>
 </div>
+<a name="getstatus"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getstatus</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.getstatus">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return status of the client. Note this is not the same as the state 
+  reported by the Presto server!</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="getcolumns"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -699,7 +769,7 @@
     </td>
   </tr></table>
   
-  <p>Empty the data buffer. Use this function to implement your own 
+  <p>Empty the data buffer. You can use this function to implement your own
   'streaming' data retrieval setup.</p>
   <dl class="fields">
   </dl>
@@ -721,8 +791,9 @@
     </td>
   </tr></table>
   
-  <p>Start a query. Currently, only one query per instance of the 
-  PrestoClient class is allowed.</p>
+  <p>Start a query. Currently, only one simultaneous query per instance of 
+  the PrestoClient class is allowed. Starting a new query will discard any 
+  data previously retrieved !</p>
   <p>Arguments:</p>
   <p>in_sql_statement -- The query that should be executed by the Presto 
   server</p>
@@ -747,30 +818,12 @@
     </td>
   </tr></table>
   
-  <p>Returns when query has finished.</p>
+  <p>Returns when query has finished. Override this function to implement 
+  your own data retrieval setup. For instance to run this function in a 
+  separate thread so other threads may request a cancellation.</p>
   <p>Arguments:</p>
   <p>in_verbose -- If True print some simple progress messages (default 
   False)</p>
-  <dl class="fields">
-  </dl>
-</td></tr></table>
-</div>
-<a name="queryisrunning"></a>
-<div>
-<table class="details" border="1" cellpadding="3"
-       cellspacing="0" width="100%" bgcolor="white">
-<tr><td>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-  <tr valign="top"><td>
-  <h3 class="epydoc"><span class="sig"><span class="sig-name">queryisrunning</span>(<span class="sig-arg">self</span>)</span>
-  </h3>
-  </td><td align="right" valign="top"
-    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.queryisrunning">source&nbsp;code</a></span>&nbsp;
-    </td>
-  </tr></table>
-  
-  <p>Returns True if query is running. Use this function to implement your 
-  own data retrieval setup.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -817,6 +870,26 @@
   </dl>
 </td></tr></table>
 </div>
+<a name="__getvarsfromresponse"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__getvarsfromresponse</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__getvarsfromresponse">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Internal function, retrieves some information from the response of the
+  Presto server. Keep the last known values, except for 'nextUri'.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <br />
 <!-- ==================== NAVIGATION BAR ==================== -->
 <table class="navbar" border="0" width="100%" cellpadding="0"
@@ -844,7 +917,7 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Thu Nov 28 13:59:59 2013
+    Generated by Epydoc 3.0.1 on Tue Dec  3 09:02:07 2013
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
