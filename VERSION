@@ -1,6 +1,10 @@
 VERSION INFORMATION: PrestoClient
 =================================
 
+Version 0.2.1 BETA - Dec 15, 2013
+---------------------------------
+- Added the R version
+
 Version 0.2.0 BETA - Dec 03, 2013
 ---------------------------------
 Python version:

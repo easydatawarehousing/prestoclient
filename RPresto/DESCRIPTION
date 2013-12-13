@@ -1,0 +1,11 @@
+Package: RPresto
+Type: Package
+Title: Run queries on a Presto server
+Version: 0.2.1
+Date: 2013-12-15
+Author: Ivo Herweijer <info@easydatawarehousing.com>
+Maintainer: Ivo Herweijer <info@easydatawarehousing.com>
+Description: PrestoClient provides a method to communicate with a Presto server. Presto is a fast query engine developed by Facebook that runs distributed queries against Hadoop HDFS servers.
+License: Apache License 2.0
+Depends: methods, RCurl, jsonlite
+URL: https://github.com/easydatawarehousing/prestoclient

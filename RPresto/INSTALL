@@ -1,0 +1,37 @@
+PrestoClient for R
+==================
+
+Install
+-------
+
+This package can be installed in R using these commands:
+
+	# Uncomment next line if you don't have devtools installed yet
+	#install.packages("devtools")
+	library(devtools)
+	install_github("easydatawarehousing/prestoclient/RPresto")
+
+
+RPresto uses packages: RCurl and jsonlite. On Linux/Debian systems it may
+be necessary to install libCurl, including development files. On Ubuntu
+this should work:
+
+	sudo apt-get install curl libcurl4-openssl-dev
+
+
+
+Copyright
+---------
+Copyright 2013 Ivo Herweijer | easydatawarehousing.com
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
