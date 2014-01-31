@@ -182,11 +182,14 @@ int main(int argc, char **argv)
 		else
 		{
 			/*
-			 * Print any errormessages
+			 * Check results
 			 */
 			if (result)
 			{
-				status = true;
+				/*
+				 * Query succeeded ?
+				 */
+				status = prestoclient_getstatus(result) == PRESTOCLIENT_STATUS_SUCCEEDED;
 
 				/*
 				 * Messages from presto server
@@ -195,7 +198,6 @@ int main(int argc, char **argv)
 				{
 					printf("%s\n", prestoclient_getlastservererror(result) );
 					printf("Serverstate = %s\n", prestoclient_getlastserverstate(result) );
-					status = false;
 				}
 
 				/*
@@ -204,7 +206,6 @@ int main(int argc, char **argv)
 				if (prestoclient_getlastclienterror(result) )
 				{
 					printf("%s\n", prestoclient_getlastclienterror(result) );
-					status = false;
 				}
 
 				/*
@@ -215,18 +216,19 @@ int main(int argc, char **argv)
 					printf("%s\n", prestoclient_getlastcurlerror(result) );
 				}
 			}
-
-			/*
-			 * Cleanup
-			 */
-			prestoclient_close(pc);
-
-			if (qdata->cache)
-				free(qdata->cache);
-
-			free(qdata);
 		}
 	}
+
+	/*
+	* Cleanup
+	*/
+	prestoclient_close(pc);
+
+	if (qdata && qdata->cache)
+		free(qdata->cache);
+
+	if (qdata)
+		free(qdata);
 
 	return (status ? 0 : 1);
 }

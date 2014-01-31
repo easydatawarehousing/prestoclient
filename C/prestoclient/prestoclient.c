@@ -318,7 +318,7 @@ static unsigned int openuri(enum E_HTTP_REQUEST_TYPES in_request_type,
 	char *uasource, *query_url, *full_url, port[32];
 	struct curl_slist *headers;
 	bool retry;
-    unsigned int retrycount, length;
+	unsigned int retrycount, length;
 	long http_code, expected_http_code, expected_http_code_busy;
 
 	uasource   = PRESTOCLIENT_SOURCE;
@@ -690,7 +690,7 @@ PRESTOCLIENT_RESULT* prestoclient_query(PRESTOCLIENT *prestoclient, const char *
 										void (*in_describe_callback_function)(void*, void*),
 										void *in_client_object)
 {
-	PRESTOCLIENT_RESULT	*result = NULL;
+	PRESTOCLIENT_RESULT *result = NULL;
 	char *uasource, *defschema, *query_url;
 	unsigned long buffersize;
 
