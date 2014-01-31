@@ -17,7 +17,7 @@ PrestoClient currently supports these versions:
 
 Comparison
 ----------
-I gathered some statistics on performance and memory use of different version (in a non-scientific
+I gathered some statistics on performance and memory use of different versions (in a non-scientific
 way by using time and ps). Results are from querying data from one table and writing this in CSV
 format to stdout. The resulting csv file would be about 20Mb (but piped into /dev/null).
 The average best times are shown here:

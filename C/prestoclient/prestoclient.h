@@ -53,14 +53,14 @@ extern "C" {
  */
 enum E_FIELDTYPES
 {
-	PRESTOCLIENT_TYPE_UNDEFINED,
-	PRESTOCLIENT_TYPE_VARCHAR,
-	PRESTOCLIENT_TYPE_BIGINT,
-	PRESTOCLIENT_TYPE_BOOLEAN,
-	PRESTOCLIENT_TYPE_DOUBLE
-//	PRESTOCLIENT_TYPE_ARRAY,
-//	PRESTOCLIENT_TYPE_MAP,
-//	PRESTOCLIENT_TYPE_TIMESTAMP
+    PRESTOCLIENT_TYPE_UNDEFINED,
+    PRESTOCLIENT_TYPE_VARCHAR,
+    PRESTOCLIENT_TYPE_BIGINT,
+    PRESTOCLIENT_TYPE_BOOLEAN,
+    PRESTOCLIENT_TYPE_DOUBLE
+//    PRESTOCLIENT_TYPE_ARRAY,
+//    PRESTOCLIENT_TYPE_MAP,
+//    PRESTOCLIENT_TYPE_TIMESTAMP
 };
 
 /**
@@ -68,10 +68,10 @@ enum E_FIELDTYPES
  */
 enum E_CLIENTSTATUS
 {
-	PRESTOCLIENT_STATUS_NONE = 0,
-	PRESTOCLIENT_STATUS_RUNNING,
-	PRESTOCLIENT_STATUS_SUCCEEDED,
-	PRESTOCLIENT_STATUS_FAILED
+    PRESTOCLIENT_STATUS_NONE = 0,
+    PRESTOCLIENT_STATUS_RUNNING,
+    PRESTOCLIENT_STATUS_SUCCEEDED,
+    PRESTOCLIENT_STATUS_FAILED
 };
 
 /* --- Structs -------------------------------------------------------------------------------------------------------- */
@@ -91,7 +91,7 @@ typedef struct ST_PRESTOCLIENT        PRESTOCLIENT;
  *
  * \return              Null terminated version string
  */
-char*					prestoclient_getversion();
+char*                   prestoclient_getversion();
 
 /**
  * \brief               Initiate a client connection
@@ -104,11 +104,11 @@ char*					prestoclient_getversion();
  *
  * \return              A handle to the PRESTOCLIENT object if successful or NULL if init failed
  */
-PRESTOCLIENT*			prestoclient_init						( const char *in_server
-																, const unsigned int *in_port
-																, const char *in_catalog
-																, const char *in_user
-																, const char *in_pwd);
+PRESTOCLIENT*           prestoclient_init                       ( const char *in_server
+                                                                , const unsigned int *in_port
+                                                                , const char *in_catalog
+                                                                , const char *in_user
+                                                                , const char *in_pwd);
 
 /**
  * \brief               Close client connection
@@ -117,7 +117,7 @@ PRESTOCLIENT*			prestoclient_init						( const char *in_server
  *
  * \param prestoclient  Handle to PRESTOCLIENT object
  */
-void					prestoclient_close						(PRESTOCLIENT *prestoclient);
+void                    prestoclient_close                      (PRESTOCLIENT *prestoclient);
 
 /**
  * \brief               Execute a query
@@ -133,13 +133,13 @@ void					prestoclient_close						(PRESTOCLIENT *prestoclient);
  *
  * \return              A handle to the PRESTOCLIENT_RESULT object if successful or NULL if starting the query failed
  */
-PRESTOCLIENT_RESULT*	prestoclient_query						(PRESTOCLIENT *prestoclient
-																, const char *in_sql_statement
-																, const char *in_schema
-																, void (*in_write_callback_function)(void*, void*)
-																, void (*in_describe_callback_function)(void*, void*)
-																, void *in_client_object
-																);
+PRESTOCLIENT_RESULT*    prestoclient_query                      (PRESTOCLIENT *prestoclient
+                                                                , const char *in_sql_statement
+                                                                , const char *in_schema
+                                                                , void (*in_write_callback_function)(void*, void*)
+                                                                , void (*in_describe_callback_function)(void*, void*)
+                                                                , void *in_client_object
+                                                                );
 
 /**
  * \brief               Return the status of the query as determined by prestoclient
@@ -149,7 +149,7 @@ PRESTOCLIENT_RESULT*	prestoclient_query						(PRESTOCLIENT *prestoclient
  *
  * \return              Numeric value corresponding to enum E_CLIENTSTATUS
  */
-unsigned int			prestoclient_getstatus					(PRESTOCLIENT_RESULT *result);
+unsigned int            prestoclient_getstatus                  (PRESTOCLIENT_RESULT *result);
 
 /**
  * \brief               Return state of the request as reported by the Presto server
@@ -158,7 +158,7 @@ unsigned int			prestoclient_getstatus					(PRESTOCLIENT_RESULT *result);
  *
  * \return              Null terminated string
  */
-char*					prestoclient_getlastserverstate			(PRESTOCLIENT_RESULT *result);
+char*                   prestoclient_getlastserverstate         (PRESTOCLIENT_RESULT *result);
 
 /**
  * \brief               Returns the number of columns of the query
@@ -167,7 +167,7 @@ char*					prestoclient_getlastserverstate			(PRESTOCLIENT_RESULT *result);
 *
  * \return              Number of columns or zero if the resultset doesn't contain columninformation (yet)
  */
-unsigned int			prestoclient_getcolumncount				(PRESTOCLIENT_RESULT *result);
+unsigned int            prestoclient_getcolumncount             (PRESTOCLIENT_RESULT *result);
 
 /**
  * \brief               Return the column name of the specified column
@@ -177,7 +177,7 @@ unsigned int			prestoclient_getcolumncount				(PRESTOCLIENT_RESULT *result);
  *
  * \return              Null terminated string
  */
-char*					prestoclient_getcolumnname				(PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
+char*                   prestoclient_getcolumnname              (PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
 
 /**
  * \brief               Return the column type of the specified column
@@ -187,7 +187,7 @@ char*					prestoclient_getcolumnname				(PRESTOCLIENT_RESULT *result, const unsi
  *
  * \return              Numeric value corresponding to enum E_FIELDTYPES
  */
-unsigned int			prestoclient_getcolumntype				(PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
+unsigned int            prestoclient_getcolumntype              (PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
 
 /**
  * \brief               Return the column type of the specified column as string
@@ -197,7 +197,7 @@ unsigned int			prestoclient_getcolumntype				(PRESTOCLIENT_RESULT *result, const
  *
  * \return              Null terminated string
  */
-char*					prestoclient_getcolumntypedescription	(PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
+char*                   prestoclient_getcolumntypedescription   (PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
 
 /**
  * \brief               Return the content of the specified column for the current row as string
@@ -207,7 +207,7 @@ char*					prestoclient_getcolumntypedescription	(PRESTOCLIENT_RESULT *result, co
  *
  * \return              Null terminated string
  */
-char*					prestoclient_getcolumndata				(PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
+char*                   prestoclient_getcolumndata              (PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
 
 /**
  * \brief               Returns true if the content of the specified column is NULL according to the database
@@ -217,7 +217,7 @@ char*					prestoclient_getcolumndata				(PRESTOCLIENT_RESULT *result, const unsi
  *
  * \return              Return true (1) if the content of the specified column is NULL, otherwise false (0)
  */
-int						prestoclient_getnullcolumnvalue			(PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
+int                     prestoclient_getnullcolumnvalue         (PRESTOCLIENT_RESULT *result, const unsigned int columnindex);
 
 /**
  * \brief               Inform prestoclient to cancel the running query
@@ -227,7 +227,7 @@ int						prestoclient_getnullcolumnvalue			(PRESTOCLIENT_RESULT *result, const u
  *
  * \param result        A handle to a PRESTOCLIENT_RESULT object
  */
-void					prestoclient_cancelquery				(PRESTOCLIENT_RESULT *result);
+void                    prestoclient_cancelquery                (PRESTOCLIENT_RESULT *result);
 
 /**
  * \brief               Return error message of last executed request generated by the prestoserver
@@ -236,7 +236,7 @@ void					prestoclient_cancelquery				(PRESTOCLIENT_RESULT *result);
  *
  * \return              Error message generated by the prestoserver or NULL if there is no error
  */
-char*					prestoclient_getlastservererror			(PRESTOCLIENT_RESULT *result);
+char*                   prestoclient_getlastservererror         (PRESTOCLIENT_RESULT *result);
 
 /**
  * \brief               Returns description of last error of determined by prestoclient
@@ -245,7 +245,7 @@ char*					prestoclient_getlastservererror			(PRESTOCLIENT_RESULT *result);
  *
  * \return              Null terminated string or NULL if no errors occurred
  */
-char*					prestoclient_getlastclienterror			(PRESTOCLIENT_RESULT *result);
+char*                   prestoclient_getlastclienterror         (PRESTOCLIENT_RESULT *result);
 
 /**
  * \brief               Returns additional error messages produced by curl
@@ -254,7 +254,7 @@ char*					prestoclient_getlastclienterror			(PRESTOCLIENT_RESULT *result);
  *
  * \return              Null terminated string, may be empty
  */
-char*					prestoclient_getlastcurlerror			(PRESTOCLIENT_RESULT *result);
+char*                   prestoclient_getlastcurlerror           (PRESTOCLIENT_RESULT *result);
 
 #ifdef __cplusplus
 }
