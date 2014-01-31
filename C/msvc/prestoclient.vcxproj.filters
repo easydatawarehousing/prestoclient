@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\prestoclient\prestoclient.c">
+      <Filter>prestoclient\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\prestoclient\prestoclientutils.c">
+      <Filter>prestoclient\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\prestoclient\prestoclientjsonstream.c">
+      <Filter>prestoclient\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main.c">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\prestoclient\prestoclient.h">
+      <Filter>prestoclient\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\prestoclient\prestoclienttypes.h">
+      <Filter>prestoclient\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{da8ec37b-c9e8-456c-89cd-788de38b0ae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prestoclient">
+      <UniqueIdentifier>{0c085e01-d3fd-4a18-801f-22be7341cf93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prestoclient\include">
+      <UniqueIdentifier>{326c49ef-26db-42e7-94c5-599434e0e456}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="prestoclient\source">
+      <UniqueIdentifier>{2bc57544-019b-4cfd-b0cb-0150d1efc126}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
