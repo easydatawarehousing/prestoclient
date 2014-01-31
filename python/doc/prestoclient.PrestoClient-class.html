@@ -64,8 +64,8 @@
     HDFS servers (<a href="http://hadoop.apache.org/" 
     target="_top">http://hadoop.apache.org/</a>). Presto uses SQL as its 
     query language. Presto is an alternative for Hadoop-Hive.</p>
-    <p>PrestoClient was developed using Presto 0.52 and tested on Presto 
-    0.52 and 0.54. Python version used is 2.7.6</p>
+    <p>PrestoClient was developed and tested on Presto versions 0.52 to 
+    0.59. Python version used is 2.7.6</p>
     <p>You can use this class with this sample code:</p>
 <pre class="py-doctest">
 <span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">import</span> prestoclient
@@ -75,14 +75,11 @@
 <span class="py-prompt">&gt;&gt;&gt; </span><span class="py-comment"># Replace localhost with ip address or dns name of the Presto server running the discovery service</span>
 <span class="py-prompt">&gt;&gt;&gt; </span>presto = prestoclient.PrestoClient(<span class="py-string">&quot;localhost&quot;</span>)
 <span class="py-prompt">&gt;&gt;&gt;</span>
-<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">if</span> <span class="py-keyword">not</span> presto.startquery(sql):
+<span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">if</span> <span class="py-keyword">not</span> presto.runquery(sql):
 <span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> <span class="py-string">&quot;Error: &quot;</span>, presto.getlasterrormessage()
 <span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">else</span>:
-<span class="py-prompt">&gt;&gt;&gt; </span>    presto.waituntilfinished(True) <span class="py-comment"># Remove True parameter to skip printing status messages</span>
-<span class="py-prompt">&gt;&gt;&gt;</span>
 <span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-comment"># We're done now, so let's show the results</span>
 <span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">print</span> <span class="py-string">&quot;Columns: &quot;</span>, presto.getcolumns()
-<span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">if</span> presto.getstatus() == <span class="py-string">&quot;FAILED&quot;</span>: <span class="py-keyword">print</span> <span class="py-string">&quot;Error : &quot;</span>, presto.getlasterrormessage()
 <span class="py-prompt">&gt;&gt;&gt; </span>    <span class="py-keyword">if</span> presto.getdata(): <span class="py-keyword">print</span> <span class="py-string">&quot;Datalength: &quot;</span>, presto.getnumberofdatarows(), <span class="py-string">&quot; Data: &quot;</span>, presto.getdata()</pre>
   <h1 class="heading">Presto client protocol</h1>
     <p>The communication protocol used between Presto clients and servers 
@@ -174,6 +171,25 @@
       Constructor of PrestoClient class.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="prestoclient.PrestoClient-class.html#runquery" class="summary-sig-name">runquery</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">in_sql_statement</span>,
+        <span class="summary-sig-arg">in_schema</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">default</code><code class="variable-quote">'</code></span>)</span><br />
+      Execute a query.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.runquery">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -499,7 +515,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__source"></a><span class="summary-name">__source</span> = <code title="'Python'"><code class="variable-quote">'</code><code class="variable-string">Python</code><code class="variable-quote">'</code></code><br />
+        <a name="__source"></a><span class="summary-name">__source</span> = <code title="'PyPrestoClient'"><code class="variable-quote">'</code><code class="variable-string">PyPrestoClient</code><code class="variable-quote">'</code></code><br />
       Client name sent to Presto server
     </td>
   </tr>
@@ -507,7 +523,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__version"></a><span class="summary-name">__version</span> = <code title="'0.2.0'"><code class="variable-quote">'</code><code class="variable-string">0.2.0</code><code class="variable-quote">'</code></code><br />
+        <a name="__version"></a><span class="summary-name">__version</span> = <code title="'0.3.0'"><code class="variable-quote">'</code><code class="variable-string">0.3.0</code><code class="variable-quote">'</code></code><br />
       PrestoClient version string
     </td>
   </tr>
@@ -515,7 +531,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__useragent"></a><span class="summary-name">__useragent</span> = <code title="'Python/0.2.0'"><code class="variable-quote">'</code><code class="variable-string">Python/0.2.0</code><code class="variable-quote">'</code></code><br />
+        <a name="__useragent"></a><span class="summary-name">__useragent</span> = <code title="'PyPrestoClient/0.3.0'"><code class="variable-quote">'</code><code class="variable-string">PyPrestoClient/0.3.0</code><code class="variable-quote">'</code></code><br />
       Useragent name sent to Presto server
     </td>
   </tr>
@@ -533,6 +549,14 @@
     </td><td class="summary">
         <a name="__updatewaittimemsec"></a><span class="summary-name">__updatewaittimemsec</span> = <code title="1500">1500</code><br />
       Wait time in millisec to wait between requests to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__retrievewaittimemsec"></a><span class="summary-name">__retrievewaittimemsec</span> = <code title="50">50</code><br />
+      Wait time in millisec to wait between requests when recieving data
     </td>
   </tr>
 <tr class="private">
@@ -711,6 +735,34 @@
   hdfs (default 'hive')</p>
   <p>in_user    -- Username to pass to the Prestoserver. If left blank the 
   username from the OS is used (default '')</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="runquery"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">runquery</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">in_sql_statement</span>,
+        <span class="sig-arg">in_schema</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">default</code><code class="variable-quote">'</code></span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.runquery">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Execute a query. Currently, only one simultaneous query per instance 
+  of the PrestoClient class is allowed. Starting a new query will discard 
+  any data previously retrieved ! Returns True if query succeeded.</p>
+  <p>Arguments:</p>
+  <p>in_sql_statement -- The query that should be executed by the Presto 
+  server</p>
+  <p>in_schema        -- The HDFS schema that should be used (default 
+  'default')</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -917,7 +969,7 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Dec  3 09:02:07 2013
+    Generated by Epydoc 3.0.1 on Thu Jan 30 10:21:37 2014
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

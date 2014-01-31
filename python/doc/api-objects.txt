@@ -9,6 +9,8 @@ prestoclient.PrestoClient.__useragent	prestoclient.PrestoClient-class.html#__use
 prestoclient.PrestoClient.__lasterror	prestoclient.PrestoClient-class.html#__lasterror
 prestoclient.PrestoClient.__cancelquery	prestoclient.PrestoClient-class.html#__cancelquery
 prestoclient.PrestoClient.getlastresponse	prestoclient.PrestoClient-class.html#getlastresponse
+prestoclient.PrestoClient.__retrievewaittimemsec	prestoclient.PrestoClient-class.html#__retrievewaittimemsec
+prestoclient.PrestoClient.runquery	prestoclient.PrestoClient-class.html#runquery
 prestoclient.PrestoClient.getnumberofdatarows	prestoclient.PrestoClient-class.html#getnumberofdatarows
 prestoclient.PrestoClient.__init__	prestoclient.PrestoClient-class.html#__init__
 prestoclient.PrestoClient.getlastserverstate	prestoclient.PrestoClient-class.html#getlastserverstate

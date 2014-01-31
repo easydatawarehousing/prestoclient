@@ -1,6 +1,16 @@
 VERSION INFORMATION: PrestoClient
 =================================
 
+Version 0.3.0 BETA - Jan 30, 2014
+---------------------------------
+- Added the C version. This includes a sample application but is meant to be
+  the basis for other software in need of a way to communicate with a Presto
+  server. Note that the license for the C version is GPLv3 to be in line with
+  other software that I intend to use this with.
+- Update to Python version: Made it a bit quicker by lowering the time
+  between requests to the Presto server when data is being recieved.
+  Added the runquery function.
+
 Version 0.2.1 BETA - Dec 15, 2013
 ---------------------------------
 - Added the R version
@@ -8,8 +18,10 @@ Version 0.2.1 BETA - Dec 15, 2013
 Version 0.2.0 BETA - Dec 03, 2013
 ---------------------------------
 Python version:
-- Client properly detects when a request is finished. The instance of the client may then be re-used for a new query
-- Updated the presto client protocol. Client no longer uses the 'state' variable, only the presence of a 'nextUri' link
+- Client properly detects when a request is finished. The instance of the
+  client may then be re-used for a new query
+- Updated the presto client protocol. Client no longer uses the 'state'
+  variable, only the presence of a 'nextUri' link.
   If server responds with http code 503, the request will be retried.
 - Some changes in naming of methods
 - Added the error message from the database if the query failed

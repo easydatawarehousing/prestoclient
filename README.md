@@ -1,34 +1,35 @@
 PrestoClient
 ============
 
-PrestoClient implements a Python class to communicate with a Presto server.
+PrestoClient implements the client protocol to communicate with a Presto server.
 Presto (http://prestodb.io/) is a fast query engine developed
 by Facebook that runs distributed queries against a (cluster of)
 Hadoop HDFS servers (http://hadoop.apache.org/).
 Presto uses SQL as its query language. Presto is an alternative for
 Hadoop-Hive.
 
-PrestoClient was developed using Presto 0.52 and tested on Presto 0.52 and 0.54. Python version used is 2.7.6
+Versions
+--------
+PrestoClient currently supports these versions:
+- Python
+- R language
+- C
 
-You can use this class with this sample code:
+Comparison
+----------
+I gathered some statistics on performance and memory use of different version (in a non-scientific
+way by using time and ps). Results are from querying data from one table and writing this in CSV
+format to stdout. The resulting csv file would be about 20Mb (but piped into /dev/null).
+The average best times are shown here:
 
-	import prestoclient
-	
-	sql = "SHOW TABLES"
-	
-	# Replace localhost with ip address or dns name of the Presto server running the discovery service
-	presto = prestoclient.PrestoClient("localhost")
-	
-	if not presto.startquery(sql):
-		print "Error: ", presto.getlasterrormessage()
-	else:
-		presto.waituntilfinished(True) # Remove True parameter to skip printing status messages
-		
-		# We're done now, so let's show the results
-		print "Columns: ", presto.getcolumns()
-		if presto.getstatus() == "FAILED": print "Error : ", presto.getlasterrormessage()
-		if presto.getdata(): print "Datalength: ", presto.getnumberofdatarows(), " Data: ", presto.getdata()
+| Version    | runtime (sec) | memory (Mb) |
+| ---------- | -------------:| -----------:|
+| Java (CLI) | 10.5          | 150         |
+| Python     | 9.7           | 300         |
+| C          | 5.3           | 1           |
 
+Note that the memory usage of the C version is so low because the query data is not stored, only passed
+through.
 
 Presto client protocol
 ----------------------
@@ -62,30 +63,15 @@ The Presto server will retain information about finished queries for 15 minutes.
 respond to the server (by following the 'nextUri' links) the server will cancel these 'dead' queries after
 5 minutes. These timeouts are hardcoded in the Presto server source code.
 
-ToDo
-----
-- Enable PrestoClient to handle multiple running queries simultaneously. Currently you can only run one query per instance of this class.
-- Add support for https connections
-- Add support for insert/update queries (if and when Presto server supports this).
-
 Availability
 ------------
 Source code is available through: https://github.com/easydatawarehousing/prestoclient
-
 Additional information may be found here: http://www.easydatawarehousing.com/tag/presto/
 
 Copyright
 ---------
-Copyright 2013 Ivo Herweijer | easydatawarehousing.com
+Copyright 2013-2014 Ivo Herweijer | easydatawarehousing.com
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at:
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+License
+-------
+Most versions are licensed under Apache 2.0. The C version uses the GPLv3 license.

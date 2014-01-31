@@ -3,7 +3,7 @@
 """ PrestoClient provides a method to communicate with a Presto server. Presto is a fast query
     engine developed by Facebook that runs distributed queries against Hadoop HDFS servers.
 
-    Copyright 2013 Ivo Herweijer | easydatawarehousing.com
+    Copyright 2013-2014 Ivo Herweijer | easydatawarehousing.com
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class PrestoClient:
     Presto uses SQL as its query language. Presto is an alternative for
     Hadoop-Hive.
 
-    PrestoClient was developed using Presto 0.52 and tested on Presto 0.52 and 0.54. Python version used is 2.7.6
+    PrestoClient was developed and tested on Presto versions 0.52 to 0.59. Python version used is 2.7.6
 
     You can use this class with this sample code:
 
@@ -49,14 +49,11 @@ class PrestoClient:
     >>> # Replace localhost with ip address or dns name of the Presto server running the discovery service
     >>> presto = prestoclient.PrestoClient("localhost")
     >>>
-    >>> if not presto.startquery(sql):
+    >>> if not presto.runquery(sql):
     >>>     print "Error: ", presto.getlasterrormessage()
     >>> else:
-    >>>     presto.waituntilfinished(True) # Remove True parameter to skip printing status messages
-    >>>
     >>>     # We're done now, so let's show the results
     >>>     print "Columns: ", presto.getcolumns()
-    >>>     if presto.getstatus() == "FAILED": print "Error : ", presto.getlasterrormessage()
     >>>     if presto.getdata(): print "Datalength: ", presto.getnumberofdatarows(), " Data: ", presto.getdata()
 
     Presto client protocol
@@ -112,10 +109,11 @@ class PrestoClient:
     """
 
     __source = "PyPrestoClient"                 #: Client name sent to Presto server
-    __version = "0.2.0"                         #: PrestoClient version string
+    __version = "0.3.0"                         #: PrestoClient version string
     __useragent = __source + "/" + __version    #: Useragent name sent to Presto server
     __urltimeout = 5000                         #: Timeout in millisec to wait for Presto server to respond
     __updatewaittimemsec = 1500                 #: Wait time in millisec to wait between requests to Presto server
+    __retrievewaittimemsec = 50                 #: Wait time in millisec to wait between requests when recieving data
     __retrywaittimemsec = 100                   #: Wait time in millisec to wait before retrying a request
     __maximumretries = 5                        #: Maximum number of retries fro request in case of 503 errors
     __server = ""                               #: IP address or DNS name of Presto server
@@ -158,6 +156,25 @@ class PrestoClient:
             self.__user = in_user
 
         return
+
+    def runquery(self, in_sql_statement, in_schema="default"):
+        """ Execute a query. Currently, only one simultaneous query per instance of the PrestoClient class is allowed.
+        Starting a new query will discard any data previously retrieved ! Returns True if query succeeded.
+
+        Arguments:
+
+        in_sql_statement -- The query that should be executed by the Presto server
+
+        in_schema        -- The HDFS schema that should be used (default 'default')
+
+        """
+
+        if not self.startquery(in_sql_statement, in_schema):
+            return False
+        else:
+            self.waituntilfinished()
+
+        return self.__clientstatus == "SUCCEEDED"
 
     def getversion(self):
         """ Return PrestoClient version number. """
@@ -283,7 +300,10 @@ class PrestoClient:
                 tries += 1
                 print "Ping: ", tries, " Rows=", len(self.__data)
 
-            sleep(self.__updatewaittimemsec/1000)
+            if self.__data:
+                sleep(self.__retrievewaittimemsec/1000)
+            else:
+                sleep(self.__updatewaittimemsec/1000)
 
         if in_verbose:
             print "Done: ", tries + 1, " Rows=", len(self.__data)
@@ -302,6 +322,8 @@ class PrestoClient:
 
         if not self.__openuri(self.__lastnexturi):
             return False
+
+        #print "response: ", self.__lastresponse
 
         self.__getvarsfromresponse()
 
