@@ -24,6 +24,7 @@ On Linux/Debian use these commands:
 
 	git clone https://github.com/easydatawarehousing/prestoclient.git  
 	cd prestoclient/C  
+	cmake .  
 	make  
 
 Optionally you can make changes to CMakeLists.txt and run cmake

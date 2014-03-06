@@ -641,7 +641,7 @@ PRESTOCLIENT* prestoclient_init(const char *in_server, const unsigned int *in_po
 
 		alloc_copy(&client->catalog, in_catalog ? in_catalog : defaultcatalog);
 
-		if (in_user)
+		if (in_user && strlen(in_user) > 0)
 		{
 			alloc_copy(&client->user, in_user);
 		}

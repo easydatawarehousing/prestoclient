@@ -23,6 +23,9 @@
 // These are private defines and type declarations for prestoclient
 // Use "prestoclient.h" instead
 
+#ifndef EASYPTORA_PRESTOCLIENTTYPES_HH
+#define EASYPTORA_PRESTOCLIENTTYPES_HH
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -199,3 +202,5 @@ extern bool json_reader(PRESTOCLIENT_RESULT* result);
 extern void json_delete_parser(JSONPARSER* json);
 extern void json_delete_lexer(JSONLEXER* lexer);
 extern void json_reset_lexer(JSONLEXER* lexer);
+
+#endif // EASYPTORA_PRESTOCLIENTTYPES_HH
