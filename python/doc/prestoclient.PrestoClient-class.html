@@ -65,7 +65,7 @@
     target="_top">http://hadoop.apache.org/</a>). Presto uses SQL as its 
     query language. Presto is an alternative for Hadoop-Hive.</p>
     <p>PrestoClient was developed and tested on Presto versions 0.52 to 
-    0.59. Python version used is 2.7.6</p>
+    0.68. Python version used is 2.7.6</p>
     <p>You can use this class with this sample code:</p>
 <pre class="py-doctest">
 <span class="py-prompt">&gt;&gt;&gt; </span><span class="py-keyword">import</span> prestoclient
@@ -167,7 +167,9 @@
         <span class="summary-sig-arg">in_server</span>,
         <span class="summary-sig-arg">in_port</span>=<span class="summary-sig-default">8080</span>,
         <span class="summary-sig-arg">in_catalog</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">hive</code><code class="variable-quote">'</code></span>,
-        <span class="summary-sig-arg">in_user</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span><br />
+        <span class="summary-sig-arg">in_user</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">in_timezone</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">in_language</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span><br />
       Constructor of PrestoClient class.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="prestoclient-pysrc.html#PrestoClient.__init__">source&nbsp;code</a></span>
@@ -523,7 +525,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__version"></a><span class="summary-name">__version</span> = <code title="'0.3.0'"><code class="variable-quote">'</code><code class="variable-string">0.3.0</code><code class="variable-quote">'</code></code><br />
+        <a name="__version"></a><span class="summary-name">__version</span> = <code title="'0.3.1'"><code class="variable-quote">'</code><code class="variable-string">0.3.1</code><code class="variable-quote">'</code></code><br />
       PrestoClient version string
     </td>
   </tr>
@@ -531,7 +533,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="__useragent"></a><span class="summary-name">__useragent</span> = <code title="'PyPrestoClient/0.3.0'"><code class="variable-quote">'</code><code class="variable-string">PyPrestoClient/0.3.0</code><code class="variable-quote">'</code></code><br />
+        <a name="__useragent"></a><span class="summary-name">__useragent</span> = <code title="'PyPrestoClient/0.3.1'"><code class="variable-quote">'</code><code class="variable-string">PyPrestoClient/0.3.1</code><code class="variable-quote">'</code></code><br />
       Useragent name sent to Presto server
     </td>
   </tr>
@@ -605,6 +607,22 @@
     </td><td class="summary">
         <a name="__user"></a><span class="summary-name">__user</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
       Username to pass to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__timezone"></a><span class="summary-name">__timezone</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      Timezone to pass to Presto server
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__language"></a><span class="summary-name">__language</span> = <code title="''"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></code><br />
+      Language to pass to Presto server
     </td>
   </tr>
 <tr class="private">
@@ -717,7 +735,9 @@
         <span class="sig-arg">in_server</span>,
         <span class="sig-arg">in_port</span>=<span class="sig-default">8080</span>,
         <span class="sig-arg">in_catalog</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">hive</code><code class="variable-quote">'</code></span>,
-        <span class="sig-arg">in_user</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span>
+        <span class="sig-arg">in_user</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">in_timezone</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">in_language</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
@@ -727,14 +747,18 @@
   
   <p>Constructor of PrestoClient class.</p>
   <p>Arguments:</p>
-  <p>in_server  -- IP Address or dns name of the Presto server running the 
+  <p>in_server   -- IP Address or dns name of the Presto server running the
   discovery service</p>
-  <p>in_port    -- TCP port of the Prestoserver running the discovery 
+  <p>in_port     -- TCP port of the Prestoserver running the discovery 
   service (default 8080)</p>
-  <p>in_catalog -- Catalog name that the Prestoserver should use to query 
+  <p>in_catalog  -- Catalog name that the Prestoserver should use to query 
   hdfs (default 'hive')</p>
-  <p>in_user    -- Username to pass to the Prestoserver. If left blank the 
+  <p>in_user     -- Username to pass to the Prestoserver. If left blank the
   username from the OS is used (default '')</p>
+  <p>in_timezone -- Timezone to pass to the Prestoserver. Leave blank 
+  (=default) for servers default timezone. (IANA timezone format)</p>
+  <p>in_language -- Language to pass to the Prestoserver. Leave blank 
+  (=default) for the servers default language. (ISO-639-1 code)</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -969,7 +993,7 @@
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Thu Jan 30 10:21:37 2014
+    Generated by Epydoc 3.0.1 on Wed May 14 10:37:32 2014
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

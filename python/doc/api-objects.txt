@@ -2,6 +2,7 @@ prestoclient	prestoclient-module.html
 prestoclient.__package__	prestoclient-module.html#__package__
 prestoclient.PrestoClient	prestoclient.PrestoClient-class.html
 prestoclient.PrestoClient.__data	prestoclient.PrestoClient-class.html#__data
+prestoclient.PrestoClient.__timezone	prestoclient.PrestoClient-class.html#__timezone
 prestoclient.PrestoClient.__columns	prestoclient.PrestoClient-class.html#__columns
 prestoclient.PrestoClient.getcolumns	prestoclient.PrestoClient-class.html#getcolumns
 prestoclient.PrestoClient.__updatewaittimemsec	prestoclient.PrestoClient-class.html#__updatewaittimemsec
@@ -40,5 +41,6 @@ prestoclient.PrestoClient.__clientstatus	prestoclient.PrestoClient-class.html#__
 prestoclient.PrestoClient.__getvarsfromresponse	prestoclient.PrestoClient-class.html#__getvarsfromresponse
 prestoclient.PrestoClient.waituntilfinished	prestoclient.PrestoClient-class.html#waituntilfinished
 prestoclient.PrestoClient.__user	prestoclient.PrestoClient-class.html#__user
+prestoclient.PrestoClient.__language	prestoclient.PrestoClient-class.html#__language
 prestoclient.PrestoClient.__source	prestoclient.PrestoClient-class.html#__source
 prestoclient.PrestoClient.getversion	prestoclient.PrestoClient-class.html#getversion

@@ -38,7 +38,7 @@ class PrestoClient:
     Presto uses SQL as its query language. Presto is an alternative for
     Hadoop-Hive.
 
-    PrestoClient was developed and tested on Presto versions 0.52 to 0.59. Python version used is 2.7.6
+    PrestoClient was developed and tested on Presto versions 0.52 to 0.68. Python version used is 2.7.6
 
     You can use this class with this sample code:
 
@@ -109,7 +109,7 @@ class PrestoClient:
     """
 
     __source = "PyPrestoClient"                 #: Client name sent to Presto server
-    __version = "0.3.0"                         #: PrestoClient version string
+    __version = "0.3.1"                         #: PrestoClient version string
     __useragent = __source + "/" + __version    #: Useragent name sent to Presto server
     __urltimeout = 5000                         #: Timeout in millisec to wait for Presto server to respond
     __updatewaittimemsec = 1500                 #: Wait time in millisec to wait between requests to Presto server
@@ -120,6 +120,8 @@ class PrestoClient:
     __port = 0                                  #: TCP port of Presto server
     __catalog = ""                              #: Catalog name to be used by Presto server
     __user = ""                                 #: Username to pass to Presto server
+    __timezone = ""                             #: Timezone to pass to Presto server
+    __language = ""                             #: Language to pass to Presto server
     __lasterror = ""                            #: Html error of last request
     __lastinfouri = ""                          #: Uri to query information on the Presto server
     __lastnexturi = ""                          #: Uri to next dataframe on the Presto server
@@ -131,24 +133,32 @@ class PrestoClient:
     __columns = {}                              #: Buffer for the column information returned by the query
     __data = []                                 #: Buffer for the data returned by the query
 
-    def __init__(self, in_server, in_port=8080, in_catalog="hive", in_user=""):
+    def __init__(self, in_server, in_port=8080, in_catalog="hive", in_user="", in_timezone="", in_language=""):
         """ Constructor of PrestoClient class.
 
         Arguments:
 
-        in_server  -- IP Address or dns name of the Presto server running the discovery service
+        in_server   -- IP Address or dns name of the Presto server running the discovery service
 
-        in_port    -- TCP port of the Prestoserver running the discovery service (default 8080)
+        in_port     -- TCP port of the Prestoserver running the discovery service (default 8080)
 
-        in_catalog -- Catalog name that the Prestoserver should use to query hdfs (default 'hive')
+        in_catalog  -- Catalog name that the Prestoserver should use to query hdfs (default 'hive')
 
-        in_user    -- Username to pass to the Prestoserver. If left blank the username from the OS is used
+        in_user     -- Username to pass to the Prestoserver. If left blank the username from the OS is used
         (default '')
+
+        in_timezone -- Timezone to pass to the Prestoserver. Leave blank (=default) for servers default timezone.
+        (IANA timezone format)
+
+        in_language -- Language to pass to the Prestoserver. Leave blank (=default) for the servers default language.
+        (ISO-639-1 code)
 
         """
         self.__server = in_server
         self.__port = in_port
         self.__catalog = in_catalog
+        self.__timezone = in_timezone
+        self.__language = in_language
 
         if in_user == "":
             self.__user = getpass.getuser()
@@ -230,6 +240,12 @@ class PrestoClient:
                    "X-Presto-Schema":  in_schema,
                    "User-Agent":       self.__useragent,
                    "X-Presto-User":    self.__user}
+
+        if self.__timezone:
+            headers["X-Presto-Time-Zone"] = self.__timezone
+
+        if self.__language:
+            headers["X-Presto-Language"] = self.__language
 
         # Prepare statement
         sql = in_sql_statement
