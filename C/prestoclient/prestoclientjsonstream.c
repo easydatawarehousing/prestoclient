@@ -764,8 +764,25 @@ static void json_extract_variables(PRESTOCLIENT_RESULT *result)
 				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_BOOLEAN;
 			else if (strcmp(result->lexer->value, "double") == 0)
 				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_DOUBLE;
+			else if (strcmp(result->lexer->value, "date") == 0)
+				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_DATE;
+			else if (strcmp(result->lexer->value, "time") == 0)
+				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_TIME;
+			else if (strcmp(result->lexer->value, "time with time zone") == 0)
+				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_TIME_WITH_TIME_ZONE;
+			else if (strcmp(result->lexer->value, "timestamp") == 0)
+				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_TIMESTAMP;
+			else if (strcmp(result->lexer->value, "timestamp with time zone") == 0)
+				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_TIMESTAMP_WITH_TIME_ZONE;
+			else if (strcmp(result->lexer->value, "interval year to month") == 0)
+				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_INTERVAL_YEAR_TO_MONTH;
+			else if (strcmp(result->lexer->value, "interval day to second") == 0)
+				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_INTERVAL_DAY_TO_SECOND;
 			else
+			{
+				assert(strcmp(result->lexer->value, "varchar") == 0);
 				result->columns[result->columncount - 1]->type = PRESTOCLIENT_TYPE_VARCHAR;
+			}
 		}
 		//	else
 			// An unknown field was encountered -> continue

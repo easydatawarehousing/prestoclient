@@ -182,6 +182,8 @@ typedef struct ST_PRESTOCLIENT
 	unsigned int				  port;							// TCP port of Presto server
 	char						 *catalog;						// Catalog name to be used by Presto server
 	char						 *user;							// Username to pass to Presto server
+	char						 *timezone;						// Timezone to pass to Presto server
+	char						 *language;						// Language to pass to Presto server
 	PRESTOCLIENT_RESULT			**results;						// Array containing query status and data
 	unsigned int				  active_results;				// Number of queries issued
 } PRESTOCLIENT;

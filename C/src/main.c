@@ -52,22 +52,28 @@ static void describe_callback_function(void *in_querydata, void *in_result)
 	PRESTOCLIENT_RESULT	*result = (PRESTOCLIENT_RESULT*)in_result;
 	unsigned int		 i, columncount = prestoclient_getcolumncount(result);
 
-	/*
-	 * Print header row
-	 */
 	if (!qdata->hdr_printed && columncount > 0)
 	{
+		/*
+		 * Print header row
+		 */
 		for (i = 0; i < columncount; i++)
 			printf("%s%s", i > 0 ? ";" : "", prestoclient_getcolumnname(result, i) );
 
 		printf("\n");
 
-		qdata->hdr_printed = true;
-
 		/*
-		 * You culd also use: prestoclient_getcolumntype
-		 * here to determine datatype of each column.
+		 * Print datatype of each column
 		 */
+		for (i = 0; i < columncount; i++)
+			printf("%s%s", i > 0 ? ";" : "", prestoclient_getcolumntypedescription(result, i) );
+
+		printf("\n");
+		
+		/*
+		 * Mark header as printed
+		 */
+		qdata->hdr_printed = true;
 	}
 }
 
@@ -162,7 +168,7 @@ int main(int argc, char **argv)
 	/*
 	 * Initialize prestoclient. We're using default values for everything but the servername
 	 */
-	pc = prestoclient_init(argv[1], NULL, NULL, NULL, NULL);
+	pc = prestoclient_init(argv[1], NULL, NULL, NULL, NULL, NULL, NULL);
 
 	if (!pc)
 	{

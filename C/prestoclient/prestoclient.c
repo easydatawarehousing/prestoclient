@@ -153,6 +153,8 @@ static PRESTOCLIENT* new_prestoclient()
 	client->port           = PRESTOCLIENT_DEFAULT_PORT;
 	client->catalog        = NULL;
 	client->user           = NULL;
+	client->timezone       = NULL;
+	client->language       = NULL;
 	client->results        = NULL;
 	client->active_results = 0;
 
@@ -310,6 +312,8 @@ static unsigned int openuri(enum E_HTTP_REQUEST_TYPES in_request_type,
 					const char *in_schema,
 					const char *in_useragent,
 					const char *in_user,
+					const char *in_timezone,
+					const char *in_language,
 					const unsigned long *in_buffersize,
 					PRESTOCLIENT_RESULT *result
 					)
@@ -410,11 +414,13 @@ static unsigned int openuri(enum E_HTTP_REQUEST_TYPES in_request_type,
 	}
 
 	// HTTP Headers
-	if (in_catalog)		add_headerline(&headers, "X-Presto-Catalog", (char*)in_catalog);
-						add_headerline(&headers, "X-Presto-Source",  uasource);
-	if (in_schema)		add_headerline(&headers, "X-Presto-Schema",  (char*)in_schema);
-	if (in_useragent)	add_headerline(&headers, "User-Agent",       (char*)in_useragent);
-	if (in_user)		add_headerline(&headers, "X-Presto-User",    (char*)in_user);
+	if (in_catalog)		add_headerline(&headers, "X-Presto-Catalog",   (char*)in_catalog);
+						add_headerline(&headers, "X-Presto-Source",           uasource);
+	if (in_schema)		add_headerline(&headers, "X-Presto-Schema",    (char*)in_schema);
+	if (in_useragent)	add_headerline(&headers, "User-Agent",         (char*)in_useragent);
+	if (in_user)		add_headerline(&headers, "X-Presto-User",      (char*)in_user);
+	if (in_timezone)	add_headerline(&headers, "X-Presto-Time-Zone", (char*)in_timezone);
+	if (in_language)	add_headerline(&headers, "X-Presto-Language",  (char*)in_language);
 
 	// Set Writeback function and request body
 	if (in_request_type == PRESTOCLIENT_HTTP_REQUEST_TYPE_POST || in_request_type == PRESTOCLIENT_HTTP_REQUEST_TYPE_GET)
@@ -505,6 +511,8 @@ static void cancel(PRESTOCLIENT_RESULT *result)
 					result->client->useragent,
 					result->client->user,
 					NULL,
+					NULL,
+					NULL,
 					(void*)result);
 	}
 }
@@ -542,6 +550,8 @@ static bool prestoclient_queryisrunning(PRESTOCLIENT_RESULT *result)
 					NULL,
 					prestoclient->useragent,
 					prestoclient->user,
+					NULL,
+					NULL,
 					NULL,
 					(void*)result) == PRESTOCLIENT_RESULT_OK)
 	{
@@ -607,7 +617,8 @@ char* prestoclient_getversion()
 }
 
 PRESTOCLIENT* prestoclient_init(const char *in_server, const unsigned int *in_port, const char *in_catalog,
-								const char *in_user, const char *in_pwd)
+								const char *in_user, const char *in_pwd, const char *in_timezone,
+								const char *in_language)
 {
 	PRESTOCLIENT *client = NULL;
 	char *uasource, *uaversion, *defaultcatalog;
@@ -649,6 +660,12 @@ PRESTOCLIENT* prestoclient_init(const char *in_server, const unsigned int *in_po
 		{
 			client->user = get_username();
 		}
+
+		if (in_timezone)
+			alloc_copy(&client->timezone, in_timezone);
+
+		if (in_language)
+			alloc_copy(&client->language, in_language);
 	}
 
 	return client;
@@ -671,6 +688,12 @@ void prestoclient_close(PRESTOCLIENT *prestoclient)
 
 		if (prestoclient->user)
 			free(prestoclient->user);
+
+		if (prestoclient->timezone)
+			free(prestoclient->timezone);
+
+		if (prestoclient->language)
+			free(prestoclient->language);
 
 		if (prestoclient->results)
 		{
@@ -741,6 +764,8 @@ PRESTOCLIENT_RESULT* prestoclient_query(PRESTOCLIENT *prestoclient, const char *
 					in_schema ? in_schema : defschema,
 					prestoclient->useragent,
 					prestoclient->user,
+					prestoclient->timezone,
+					prestoclient->language,
 					&buffersize,
 					(void*)result) == PRESTOCLIENT_RESULT_OK)
 		{
@@ -837,6 +862,48 @@ char* prestoclient_getcolumntypedescription(PRESTOCLIENT_RESULT *result, const u
 		case PRESTOCLIENT_TYPE_DOUBLE:
 		{
 			return "PRESTO_DOUBLE";
+			break;
+		}
+
+		case PRESTOCLIENT_TYPE_DATE:
+		{
+			return "PRESTO_DATE";
+			break;
+		}
+
+		case PRESTOCLIENT_TYPE_TIME:
+		{
+			return "PRESTO_TIME";
+			break;
+		}
+
+		case PRESTOCLIENT_TYPE_TIME_WITH_TIME_ZONE:
+		{
+			return "PRESTO_TIME_WITH_TIME_ZONE";
+			break;
+		}
+
+		case PRESTOCLIENT_TYPE_TIMESTAMP:
+		{
+			return "PRESTO_TIMESTAMP";
+			break;
+		}
+
+		case PRESTOCLIENT_TYPE_TIMESTAMP_WITH_TIME_ZONE:
+		{
+			return "PRESTO_TIMESTAMP_WITH_TIME_ZONE";
+			break;
+		}
+
+		case PRESTOCLIENT_TYPE_INTERVAL_YEAR_TO_MONTH:
+		{
+			return "PRESTO_INTERVAL_YEAR_TO_MONTH";
+			break;
+		}
+
+		case PRESTOCLIENT_TYPE_INTERVAL_DAY_TO_SECOND:
+		{
+			return "PRESTO_INTERVAL_DAY_TO_SECOND";
 			break;
 		}
 

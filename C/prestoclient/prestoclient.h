@@ -37,7 +37,7 @@ extern "C" {
 
 /* --- Defines -------------------------------------------------------------------------------------------------------- */
 #define PRESTOCLIENT_SOURCE              "cPrestoClient"  /**< Client name sent to Presto server */
-#define PRESTOCLIENT_VERSION             "0.3.0"          /**< PrestoClient version string */
+#define PRESTOCLIENT_VERSION             "0.3.1"          /**< PrestoClient version string */
 #define PRESTOCLIENT_URLTIMEOUT           5000            /**< Timeout in millisec to wait for Presto server to respond */
 #define PRESTOCLIENT_UPDATEWAITTIMEMSEC   1500            /**< Wait time in millisec to wait between requests to Presto server */
 #define PRESTOCLIENT_RETRIEVEWAITTIMEMSEC 50              /**< Wait time in millisec to wait before getting next data packet */
@@ -53,14 +53,22 @@ extern "C" {
  */
 enum E_FIELDTYPES
 {
-    PRESTOCLIENT_TYPE_UNDEFINED = 0,
-    PRESTOCLIENT_TYPE_VARCHAR,
-    PRESTOCLIENT_TYPE_BIGINT,
-    PRESTOCLIENT_TYPE_BOOLEAN,
-    PRESTOCLIENT_TYPE_DOUBLE
-//    PRESTOCLIENT_TYPE_ARRAY,
-//    PRESTOCLIENT_TYPE_MAP,
-//    PRESTOCLIENT_TYPE_TIMESTAMP
+	PRESTOCLIENT_TYPE_UNDEFINED = 0,
+	PRESTOCLIENT_TYPE_VARCHAR,
+	PRESTOCLIENT_TYPE_BIGINT,
+	PRESTOCLIENT_TYPE_BOOLEAN,
+	PRESTOCLIENT_TYPE_DOUBLE,
+	// New in Presto V0.66
+	PRESTOCLIENT_TYPE_DATE,
+	PRESTOCLIENT_TYPE_TIME,
+	PRESTOCLIENT_TYPE_TIME_WITH_TIME_ZONE,
+	PRESTOCLIENT_TYPE_TIMESTAMP,
+	PRESTOCLIENT_TYPE_TIMESTAMP_WITH_TIME_ZONE,
+	PRESTOCLIENT_TYPE_INTERVAL_YEAR_TO_MONTH,
+	PRESTOCLIENT_TYPE_INTERVAL_DAY_TO_SECOND
+	// For future implementation
+//	PRESTOCLIENT_TYPE_ARRAY,
+//	PRESTOCLIENT_TYPE_MAP,
 };
 
 /**
@@ -101,6 +109,8 @@ char*                   prestoclient_getversion();
  * \param in_catalog    String contaning the Hive catalog name. May be NULL
  * \param in_user       String contaning the username for the Presto server. May be NULL
  * \param in_pwd        String contaning the password for the Presto server. May be NULL. Currently not used
+ * \param in_timezone   String contaning the Timezone for the Presto server. May be NULL. (IANA timezone format)
+ * \param in_language   String contaning the Language for the Presto server. May be NULL. (ISO-639-1 code)
  *
  * \return              A handle to the PRESTOCLIENT object if successful or NULL if init failed
  */
@@ -108,7 +118,9 @@ PRESTOCLIENT*           prestoclient_init                       ( const char *in
                                                                 , const unsigned int *in_port
                                                                 , const char *in_catalog
                                                                 , const char *in_user
-                                                                , const char *in_pwd);
+                                                                , const char *in_pwd
+																, const char *in_timezone
+																, const char *in_language);
 
 /**
  * \brief               Close client connection
