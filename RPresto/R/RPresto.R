@@ -133,7 +133,7 @@ PrestoClient <- setRefClass(
           handle  <- getCurlHandle()
           url     <- paste("http://", mServer, ":", mPort, "/v1/statement", sep = "")
           
-          tryCatch(curlPerform(url = url, httpheader=header, postfields=sql, writefunction=resp$update, curl=handle, timeout.ms=mUrlTimeout),
+          tryCatch(curlPerform(url = url, httpheader=header, postfields=sql, writefunction=resp$update, curl=handle, timeout.ms=mUrlTimeout, followlocation=TRUE),
                    error = function(x) {
                      mLasterror <<- paste("Error connecting to server: ", mServer, ":", as.character(mPort), " : ", class(x)[1], sep = "")
                    })
@@ -230,7 +230,7 @@ PrestoClient <- setRefClass(
       # Todo: implement handling of 503 response
       resp    <- basicTextGatherer()
       handle  <- getCurlHandle()
-      tryCatch(curlPerform(url = inUri, httpheader=header, writefunction=resp$update, curl=handle, timeout.ms=mUrlTimeout),
+      tryCatch(curlPerform(url = inUri, httpheader=header, writefunction=resp$update, curl=handle, timeout.ms=mUrlTimeout, followlocation=TRUE),
                error = function(x) {
                  mLasterror <<- paste("URL error: ", inUri, " : ", class(x)[1], sep = "")
                })
