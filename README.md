@@ -2,18 +2,19 @@ PrestoClient
 ============
 
 PrestoClient implements the client protocol to communicate with a Presto server.
-Presto (http://prestodb.io/) is a fast query engine developed
+Presto [prestodb.io](http://prestodb.io/) is a fast query engine developed
 by Facebook that runs distributed queries against a (cluster of)
-Hadoop HDFS servers (http://hadoop.apache.org/).
+Hadoop HDFS servers [Hadoop](http://hadoop.apache.org/).
 Presto uses SQL as its query language. Presto is an alternative for
 Hadoop-Hive.
 
 Versions
 --------
 PrestoClient currently supports these versions:
-- Python
-- R language
-- C
+
+- Python  
+- R language (deprecated, use the [DBI client](https://github.com/prestodb/RPresto))  
+- C  
 
 Comparison
 ----------
